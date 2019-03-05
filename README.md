@@ -23,6 +23,10 @@ All in folder| `pub run test path/to/test/myclass/`
 Named test| `pub run test –n "name"`
 Platform test| `pub run test –p chrome path/to/test/test.dart`
 
+Test coverage:
+
+`pub run test_coverage`
+
 ## Run
 Run from the command line:
 

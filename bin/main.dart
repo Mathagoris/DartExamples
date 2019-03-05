@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:DartExamples/DartExamples.dart' as DartExamples;
 import 'package:DartExamples/life.dart';
 import 'package:DartExamples/iss.dart';
@@ -13,5 +15,9 @@ Future main(List<String> arguments) async {
   // Find ISS current location 
   IssLocator loc = new IssLocator(new Client());
   await loc.update();
-  print("Current ISS GPS coordinates: " + loc.currentPosition.toString());
+  print("Current ISS GPS coordinates: ${loc.currentPosition}");
+  const Point<double> cpp = Point(34.058642, -117.824860);
+  final double dist = sphericalDistanceKm(loc.currentPosition, cpp);
+  print('Current ISSGPS coordinates: [lat, lon]=[${loc.currentPosition.x},${loc.currentPosition.y}]');
+  print('Current distance from CPP to ISS is ${dist} km');
 }
