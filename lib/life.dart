@@ -96,7 +96,7 @@ class Bank {
         return Receipt(true, transaction.type, accountToProcess.balance);
         break;
       default:
-        throw "Invalid Transaction Type";
+        throw Exception("Invalid Transaction Type");
     }
   }
 
@@ -118,6 +118,7 @@ class Bank {
     if (acc != null && acc.auth(creds.password))
       return acc;
     else
+      // throws arbitrary object as exception
       throw "Could not access Account with give credentials";
   }
 }
@@ -159,9 +160,11 @@ class Person {
   Person(this.name);
   set password(String pwd) => _password = pwd;
   Transaction createTransaction(var type, int amount) {
+    // Cascade notation
     var transaction = Transaction()
         ..type = type
         ..amount = amount
+        // Nested Cascade Notation
         ..credentials = (Credentials()
           ..user = name
           ..password = _password);
