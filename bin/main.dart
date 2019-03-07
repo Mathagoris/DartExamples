@@ -1,6 +1,6 @@
+import 'dart:io';
 import 'dart:math';
 
-import 'package:DartExamples/DartExamples.dart' as DartExamples;
 import 'package:DartExamples/life.dart';
 import 'package:DartExamples/iss.dart';
 
@@ -14,8 +14,12 @@ Future main(List<String> arguments) async {
   const Point<double> cpp = Point(34.058642, -117.824860);
   final double dist = sphericalDistanceKm(loc.currentPosition, cpp);
   print('Current ISSGPS coordinates: [lat, lon]=[${loc.currentPosition.x},${loc.currentPosition.y}]');
-  print('Current distance from CPP to ISS is ${dist} km');
-  
+  print('Current distance from CPP to ISS is ${dist} km\n');
+
+  print('Start next example...');
+
+  while(await stdin.isEmpty){}
+
   List<Person> people = [Person("Alice"), Person("Bob"), Person("Craig")];
   Bank bank = Bank();
   Planet myEarth = Earth(bank, people);

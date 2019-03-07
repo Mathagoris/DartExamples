@@ -16,7 +16,6 @@ class Earth implements Planet {
 
   // Constructor
   Earth(Bank bank, List<dynamic> people) {
-    print("You have created Earth");
     this.bank = bank;
     this.people = people;
   }
@@ -28,7 +27,6 @@ class Earth implements Planet {
     for(var person in people) {
       person.password = bank.createAccount(person.name);
     }
-    print("Press Enter to destroy...");
     //while(await stdin.isEmpty) {
     while(true) {
       live();
