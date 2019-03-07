@@ -7,11 +7,6 @@ import 'package:DartExamples/iss.dart';
 import 'package:http/http.dart';
 
 Future main(List<String> arguments) async {
-  List<Person> people = [Person("Alice"), Person("Bob"), Person("Craig")];
-  Bank bank;
-  Planet myEarth = Earth(bank, people);
-  print("Don't forget, you're constant moving at ${await myEarth.floatThroughSpace()} mph");
-
   // Find ISS current location 
   IssLocator loc = new IssLocator(new Client());
   await loc.update();
@@ -20,4 +15,9 @@ Future main(List<String> arguments) async {
   final double dist = sphericalDistanceKm(loc.currentPosition, cpp);
   print('Current ISSGPS coordinates: [lat, lon]=[${loc.currentPosition.x},${loc.currentPosition.y}]');
   print('Current distance from CPP to ISS is ${dist} km');
+  
+  List<Person> people = [Person("Alice"), Person("Bob"), Person("Craig")];
+  Bank bank = Bank();
+  Planet myEarth = Earth(bank, people);
+  await myEarth.floatThroughSpace();
 }

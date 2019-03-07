@@ -1,11 +1,13 @@
 import 'dart:io';
+import 'dart:math';
 import 'package:random_string/random_string.dart' as random;
 
 enum TransactionType {WITHDRAWAL, DEPOSIT, BALANCE}
+final List<TransactionType> TTypes = TransactionType.values;
 final INVALID_TRANSACTION_TYPE = 4;
 
 abstract class Planet {
-  Future<int> floatThroughSpace();
+  Future floatThroughSpace();
 }
 
 class Earth implements Planet {
@@ -22,17 +24,46 @@ class Earth implements Planet {
   // Named Constructor
   Earth.create(this.bank, this.people);
 
-  Future<int> floatThroughSpace() async {
+  Future floatThroughSpace() async {
     for(var person in people) {
       person.password = bank.createAccount(person.name);
     }
     print("Press Enter to destroy...");
-    while(await stdin.isEmpty) {
+    //while(await stdin.isEmpty) {
+    while(true) {
       live();
     }
-    return 67000;
+    return;
   }
-  void live()  {
+  bool live()  {
+    bool allSuccess = true;
+    for(var person in people) {
+      try {
+        var rng = new Random();
+        var randType = rng.nextInt(4);
+        var type;
+        if (randType < 3)
+          type = TTypes[randType];
+        else
+          type = INVALID_TRANSACTION_TYPE;
+        var amount = rng.nextInt(25) + 1;
+        print('Attempting transaction for ${person.name}...');
+        var transaction = person.createTransaction(type, amount);
+        Receipt receipt = bank.processTransaction(transaction);
+        if (receipt.success) {
+          print('Transaction was a success!');
+          print('Balance is now: \$${receipt.balance}\n');
+        }
+      } catch (e, s) {
+        print('$e\n');
+        //stderr.write('Exception details:\n $e');
+        //stderr.write('Stack trace:\n $s');
+        allSuccess = false;
+        continue;
+      }
+      sleep(const Duration(seconds: 2));
+    }
+    return allSuccess;
   }
 
 }
@@ -48,39 +79,43 @@ class Sun implements Star {
 }
 
 class Bank {
-  Map<String, Account> accounts;
+  Map<String, Account> accounts = Map();
   Receipt processTransaction(Transaction transaction){
     Account accountToProcess = getAccount(transaction.credentials);
     switch (transaction.type){
       case (TransactionType.DEPOSIT):
-        return Receipt(deposit(accountToProcess, transaction.amount), accountToProcess.balance);
+        print("Attempting to deposit \$${transaction.amount}...");
+        return Receipt(deposit(accountToProcess, transaction.amount), transaction.type, accountToProcess.balance);
         break;
       case (TransactionType.WITHDRAWAL):
-        return Receipt(withdrawal(accountToProcess, transaction.amount), accountToProcess.balance);
+        print("Attempting to withdraw \$${transaction.amount}...");
+        return Receipt(withdrawal(accountToProcess, transaction.amount), transaction.type, accountToProcess.balance);
         break;
       case (TransactionType.BALANCE):
-        return Receipt(true, accountToProcess.balance);
+        print("Checking balance...");
+        return Receipt(true, transaction.type, accountToProcess.balance);
         break;
       default:
         throw "Invalid Transaction Type";
     }
   }
 
-  String createAccount(Person person) {
+  String createAccount(String name) {
     var newPassword = random.randomString(10);
-    person.password = newPassword;
-    accounts[person.name] = Account.create(person.name, newPassword);
+    // this bank is running a special promotion
+    accounts[name] = Account.create(name, newPassword, 100);
+    return newPassword;
   }
 
-  bool withdrawal(Account acc, double amount) => deposit(acc, -amount);
-  bool deposit(Account acc, double amount){
+  bool withdrawal(Account acc, int amount) => deposit(acc, -amount);
+  bool deposit(Account acc, int amount){
     acc.balance += amount;
     return true;
   }
 
-  Account getAccount(credentials) {
-    Account acc = accounts[credentials.user];
-    if (acc != null && acc.auth(credentials.pwd))
+  Account getAccount(Credentials creds) {
+    Account acc = accounts[creds.user];
+    if (acc != null && acc.auth(creds.password))
       return acc;
     else
       throw "Could not access Account with give credentials";
@@ -94,18 +129,27 @@ class Transaction {
 }
 
 class Receipt {
+  var type;
   bool success;
-  double balance;
+  int balance;
 
-  Receipt(this.success, this.balance);
+  Receipt(this.success, this.type, this.balance);
 }
 
 class Account {
   var _username;
   var _password;
   var balance;
-  Account.create(this._username, this._password);
+  Account.create(this._username, this._password, this.balance);
   bool auth(String pwd) => _password == pwd;
+}
+
+class Credentials {
+  var user;
+  var _pwd;
+
+  set password(String password) => _pwd = password;
+  String get password => _pwd;
 }
 
 class Person {
@@ -114,5 +158,14 @@ class Person {
 
   Person(this.name);
   set password(String pwd) => _password = pwd;
+  Transaction createTransaction(var type, int amount) {
+    var transaction = Transaction()
+        ..type = type
+        ..amount = amount
+        ..credentials = (Credentials()
+          ..user = name
+          ..password = _password);
+    return transaction;
+  }
 }
 
